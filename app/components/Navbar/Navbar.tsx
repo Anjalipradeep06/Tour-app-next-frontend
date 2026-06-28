@@ -51,10 +51,15 @@ export default function Navbar() {
   const [menuOpen, setMenuOpen] = useState(false);
   const [scrolled, setScrolled] = useState(false);
   const [dropdownOpen, setDropdownOpen] = useState(false);
+  const [mounted, setMounted] = useState(false);
 
   const dropdownRef = useRef<HTMLDivElement>(null);
 
   const showSolid = scrolled || isAdminRoute;
+
+  useEffect(() => {
+    setMounted(true);
+  }, []);
 
   useEffect(() => {
     const handleScroll = () => setScrolled(window.scrollY > 40);
@@ -114,6 +119,12 @@ export default function Navbar() {
     }`;
   };
 
+  // Treat "logged in" as only true once mounted AND a user actually exists.
+  // This guarantees server render + first client render both show "logged out",
+  // avoiding the hydration mismatch.
+  const isLoggedIn = mounted && !!user;
+  const isAdmin = mounted && user?.role === "admin";
+
   return (
     <header
       className={`fixed top-0 left-0 w-full h-[76px] z-[1000] flex items-center transition-all duration-300 ${
@@ -161,19 +172,19 @@ export default function Navbar() {
             Tours
           </Link>
 
-          {user && (
+          {isLoggedIn && (
             <Link href="/bookings" onClick={closeMenu} className={linkClass("/bookings")}>
               Bookings
             </Link>
           )}
 
-          {user?.role === "admin" && (
+          {isAdmin && (
             <Link href="/admin" onClick={closeMenu} className={linkClass("/admin")}>
               Dashboard
             </Link>
           )}
 
-          {!user ? (
+          {!isLoggedIn ? (
             <>
               <Link href="/login" onClick={closeMenu} className={linkClass("/login")}>
                 Login
@@ -214,8 +225,8 @@ export default function Navbar() {
                 {dropdownOpen && (
                   <div className="absolute top-[calc(100%+10px)] right-0 min-w-[210px] bg-white border border-gray-200 rounded-xl shadow-[0_8px_30px_rgba(0,0,0,0.12)] z-[1000] overflow-hidden">
                     <div className="px-4 pt-3.5 pb-3">
-                      <p className="font-semibold text-sm text-gray-900 mb-0.5">{user.name}</p>
-                      <p className="text-xs text-gray-500">{user.email}</p>
+                      <p className="font-semibold text-sm text-gray-900 mb-0.5">{user?.name}</p>
+                      <p className="text-xs text-gray-500">{user?.email}</p>
                     </div>
 
                     <div className="h-px bg-gray-100" />
@@ -248,7 +259,7 @@ export default function Navbar() {
                       My Bookings
                     </Link>
 
-                    {user?.role === "admin" && (
+                    {isAdmin && (
                       <Link
                         href="/admin"
                         onClick={() => {

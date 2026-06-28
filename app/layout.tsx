@@ -1,9 +1,8 @@
 import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
-import Navbar from "./components/Navbar/Navbar";
-import ReduxProvider from "../redux/provider"; // ← fix this path to match your project
-import Footer from "./components/Footer/Footer";
+import ReduxProvider from "../redux/provider";
+import ConditionalLayout from "./components/ConditionalLayout/ConditionalLayout";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -32,9 +31,7 @@ export default function RootLayout({
     >
       <body className="min-h-full flex flex-col">
         <ReduxProvider>
-          <Navbar />
-          {children}
-          <Footer/>
+          <ConditionalLayout>{children}</ConditionalLayout>
         </ReduxProvider>
       </body>
     </html>
