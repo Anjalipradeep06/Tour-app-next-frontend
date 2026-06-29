@@ -33,8 +33,9 @@ export default function Footer() {
               rel="noreferrer"
               aria-label="Facebook"
               className="w-[42px] h-[42px] rounded-full bg-slate-100 flex items-center justify-center text-[#003b95] no-underline transition-all duration-300 hover:bg-[#003b95] hover:text-white hover:-translate-y-0.5"
-            />
+            >
               <FaFacebookF />
+              </a>
             <a
 
             
@@ -43,8 +44,9 @@ export default function Footer() {
               rel="noreferrer"
               aria-label="Instagram"
               className="w-[42px] h-[42px] rounded-full bg-slate-100 flex items-center justify-center text-[#003b95] no-underline transition-all duration-300 hover:bg-[#003b95] hover:text-white hover:-translate-y-0.5"
-            />
+            >
               <FaInstagram />
+              </a>
             <a
 
             
@@ -81,17 +83,17 @@ export default function Footer() {
         <div>
           <h3 className="text-gray-900 text-[1.05rem] font-bold mb-[22px]">Popular Destinations</h3>
 
-          <Link href="/search?destination=dubai" className="block mb-3.5 text-slate-500 no-underline transition-colors duration-200 hover:text-[#003b95]">
-            Dubai
+          <Link href="/search?country=Singapore" className="block mb-3.5 text-slate-500 no-underline transition-colors duration-200 hover:text-[#003b95]">
+            Singapore
           </Link>
-          <Link href="/search?destination=switzerland" className="block mb-3.5 text-slate-500 no-underline transition-colors duration-200 hover:text-[#003b95]">
+          <Link href="/search?country=Switzerland" className="block mb-3.5 text-slate-500 no-underline transition-colors duration-200 hover:text-[#003b95]">
             Switzerland
           </Link>
-          <Link href="/search?destination=japan" className="block mb-3.5 text-slate-500 no-underline transition-colors duration-200 hover:text-[#003b95]">
+          <Link href="/search?country=Japan" className="block mb-3.5 text-slate-500 no-underline transition-colors duration-200 hover:text-[#003b95]">
             Japan
           </Link>
-          <Link href="/search?destination=maldives" className="block mb-3.5 text-slate-500 no-underline transition-colors duration-200 hover:text-[#003b95]">
-            Maldives
+          <Link href="/search?country=Australia" className="block mb-3.5 text-slate-500 no-underline transition-colors duration-200 hover:text-[#003b95]">
+            Australia
           </Link>
         </div>
 
