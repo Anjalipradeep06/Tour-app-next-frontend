@@ -3,7 +3,7 @@ import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
 import ReduxProvider from "../redux/provider";
 import ConditionalLayout from "./components/ConditionalLayout/ConditionalLayout";
-
+import ToastProvider from "./components/ToastProvider/ToastProvider";
 const geistSans = Geist({
   variable: "--font-geist-sans",
   subsets: ["latin"],
@@ -32,6 +32,9 @@ export default function RootLayout({
       <body className="min-h-full flex flex-col">
         <ReduxProvider>
           <ConditionalLayout>{children}</ConditionalLayout>
+
+          {/* Toast Container */}
+          <ToastProvider />
         </ReduxProvider>
       </body>
     </html>
