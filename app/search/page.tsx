@@ -1,5 +1,5 @@
 import { Suspense } from "react";
-import SearchTours from "./SearchTours.tsx/page";
+import SearchTours from "./SearchTours";
 
 export default function Page() {
   return (
