@@ -72,12 +72,12 @@ export default function AdminDashboard() {
 
   useEffect(() => {
     dispatch(getDashboardStats() as any);
-    dispatch(getAllBookings() as any);
+    dispatch(getAllBookings({}) as any);
   }, [dispatch]);
 
   usePolling(() => {
     dispatch(getDashboardStats() as any);
-    dispatch(getAllBookings() as any);
+    dispatch(getAllBookings({}) as any);
   }, 10000);
 
   const handleApprove = (id: string) => {
