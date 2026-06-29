@@ -64,25 +64,29 @@ export default function SearchTours() {
 
   /* SEARCH (from SearchBar) */
   const handleSearch = (searchValues: Record<string, string>) => {
-    setPage(1);
+  setPage(1);
 
-    setQueryParams((prev) => {
-      const merged = { ...prev, ...searchValues };
-      syncUrl(merged);
-      return merged;
-    });
+  const merged = {
+    ...queryParams,
+    ...searchValues,
   };
+
+  setQueryParams(merged);
+  syncUrl(merged);
+};
 
   /* FILTER (from FilterSidebar) */
-  const handleFilter = (filterValues: Record<string, string>) => {
-    setPage(1);
+ const handleFilter = (filterValues: Record<string, string>) => {
+  setPage(1);
 
-    setQueryParams((prev) => {
-      const merged = { ...prev, ...filterValues };
-      syncUrl(merged);
-      return merged;
-    });
+  const merged = {
+    ...queryParams,
+    ...filterValues,
   };
+
+  setQueryParams(merged);
+  syncUrl(merged);
+};
 
   /* RESET — hard navigation on purpose, same as original */
   const handleReset = () => {
