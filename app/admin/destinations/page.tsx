@@ -7,22 +7,68 @@ import { getAllDestinations } from "@/redux/thunks/destinationThunk";
 import DestinationFormModal from "@/app/components/admin/DestinationFormModal";
 
 const CONTINENTS = ["", "Africa", "Asia", "Europe", "North America", "South America", "Australia", "Antarctica"];
+const LIMIT = 12;
 
 export default function ManageDestinations() {
   const dispatch = useDispatch();
 
-  const { allDestinations = [], loading, total = 0 } = useSelector(
+  const { allDestinations = [], loading, total = 0, page = 1, pages = 1 } = useSelector(
     (state: any) => state.destinations
   );
 
   const [search, setSearch] = useState("");
   const [continent, setContinent] = useState("");
+  const [currentPage, setCurrentPage] = useState(1);
   const [showModal, setShowModal] = useState(false);
   const [editingDestination, setEditingDestination] = useState<any>(null);
 
+  // Reset to page 1 whenever filters change
   useEffect(() => {
-    dispatch(getAllDestinations({ search, continent: continent || undefined }) as any);
-  }, [dispatch, search, continent]);
+    setCurrentPage(1);
+  }, [search, continent]);
+
+  useEffect(() => {
+    dispatch(
+      getAllDestinations({
+        search,
+        continent: continent || undefined,
+        page: currentPage,
+        limit: LIMIT,
+      }) as any
+    );
+  }, [dispatch, search, continent, currentPage]);
+
+  const handlePrev = () => {
+    if (currentPage > 1) setCurrentPage((p) => p - 1);
+  };
+
+  const handleNext = () => {
+    if (currentPage < pages) setCurrentPage((p) => p + 1);
+  };
+
+  // Build a compact page list with ellipses for larger ranges
+  const getPageNumbers = () => {
+    const totalPages = pages || 1;
+    const current = page || 1;
+    const range: (number | string)[] = [];
+
+    if (totalPages <= 7) {
+      for (let i = 1; i <= totalPages; i++) range.push(i);
+      return range;
+    }
+
+    range.push(1);
+    if (current > 3) range.push("...");
+
+    const start = Math.max(2, current - 1);
+    const end = Math.min(totalPages - 1, current + 1);
+    for (let i = start; i <= end; i++) range.push(i);
+
+    if (current < totalPages - 2) range.push("...");
+    range.push(totalPages);
+
+    return range;
+  };
 
   return (
     <div className="max-w-[1200px] mx-auto font-[Inter,sans-serif] text-[#1C1F23]">
@@ -117,6 +163,47 @@ export default function ManageDestinations() {
               </div>
             </div>
           ))}
+        </div>
+      )}
+
+      {/* PAGINATION */}
+      {!loading && pages > 1 && (
+        <div className="flex items-center justify-center gap-1.5 mt-8 mb-2 flex-wrap">
+          <button
+            onClick={handlePrev}
+            disabled={page <= 1}
+            className="min-w-[36px] h-9 px-3 rounded-[8px] border border-[#E6E4DD] bg-white text-[#1C1F23] text-[13px] font-semibold cursor-pointer disabled:opacity-40 disabled:cursor-not-allowed hover:border-[#C9A669] transition-colors"
+          >
+            Prev
+          </button>
+
+          {getPageNumbers().map((p, idx) =>
+            p === "..." ? (
+              <span key={`ellipsis-${idx}`} className="px-2 text-[#6B6F76] text-[13px]">
+                ...
+              </span>
+            ) : (
+              <button
+                key={p}
+                onClick={() => setCurrentPage(p as number)}
+                className={`min-w-[36px] h-9 px-3 rounded-[8px] text-[13px] font-semibold cursor-pointer transition-colors ${
+                  p === page
+                    ? "bg-gradient-to-r from-[#C9A669] to-[#B78E4F] text-[#1C1F23] border-none"
+                    : "bg-white text-[#1C1F23] border border-[#E6E4DD] hover:border-[#C9A669]"
+                }`}
+              >
+                {p}
+              </button>
+            )
+          )}
+
+          <button
+            onClick={handleNext}
+            disabled={page >= pages}
+            className="min-w-[36px] h-9 px-3 rounded-[8px] border border-[#E6E4DD] bg-white text-[#1C1F23] text-[13px] font-semibold cursor-pointer disabled:opacity-40 disabled:cursor-not-allowed hover:border-[#C9A669] transition-colors"
+          >
+            Next
+          </button>
         </div>
       )}
 
