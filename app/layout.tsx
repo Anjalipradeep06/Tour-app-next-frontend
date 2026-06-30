@@ -4,6 +4,7 @@ import "./globals.css";
 import ReduxProvider from "../redux/provider";
 import ConditionalLayout from "./components/ConditionalLayout/ConditionalLayout";
 import ToastProvider from "./components/ToastProvider/ToastProvider";
+import ScrollToTop from "./components/ScrollToTop";
 const geistSans = Geist({
   variable: "--font-geist-sans",
   subsets: ["latin"],
@@ -31,6 +32,7 @@ export default function RootLayout({
     >
       <body className="min-h-full flex flex-col">
         <ReduxProvider>
+          <ScrollToTop />
           <ConditionalLayout>{children}</ConditionalLayout>
 
           {/* Toast Container */}
