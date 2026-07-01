@@ -2,7 +2,7 @@
 
 import { useEffect, useRef, useState } from "react";
 import Link from "next/link";
-import { usePathname, useRouter } from "next/navigation";
+import { usePathname, useRouter, notFound } from "next/navigation";
 import { useDispatch, useSelector } from "react-redux";
 
 import {
@@ -26,6 +26,27 @@ const NAV_ITEMS = [
   { href: "/admin/users", label: "Users", icon: <FaUsers /> },
 ];
 
+interface JwtPayload {
+  role?: string;
+  exp?: number;
+  [key: string]: unknown;
+}
+
+function decodeToken(token: string): JwtPayload | null {
+  try {
+    const base64Payload = token.split(".")[1];
+    const json = atob(base64Payload.replace(/-/g, "+").replace(/_/g, "/"));
+    return JSON.parse(json);
+  } catch {
+    return null;
+  }
+}
+
+function getStoredToken(): string | null {
+  const match = document.cookie.match(/(?:^|;\s*)token=([^;]+)/);
+  return match ? decodeURIComponent(match[1]) : null;
+}
+
 export default function AdminLayout({ children }: { children: React.ReactNode }) {
   const dispatch = useDispatch();
   const router = useRouter();
@@ -34,6 +55,38 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
 
   const { user } = useSelector((state: any) => state.auth);
   const [accountOpen, setAccountOpen] = useState(false);
+  const [authStatus, setAuthStatus] = useState<"checking" | "authorized" | "unauthorized">(
+    "checking"
+  );
+
+  useEffect(() => {
+    const token = getStoredToken();
+
+    if (!token) {
+      router.replace("/login");
+      return;
+    }
+
+    const payload = decodeToken(token);
+
+    if (!payload) {
+      router.replace("/login");
+      return;
+    }
+
+    if (payload.exp && Date.now() >= payload.exp * 1000) {
+      document.cookie = "token=; path=/; max-age=0";
+      router.replace("/login");
+      return;
+    }
+
+    if (payload.role !== "admin") {
+      setAuthStatus("unauthorized");
+      return;
+    }
+
+    setAuthStatus("authorized");
+  }, [router]);
 
   useEffect(() => {
     const handleClickOutside = (e: MouseEvent) => {
@@ -47,12 +100,21 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
 
   const handleLogout = () => {
     setAccountOpen(false);
+    document.cookie = "token=; path=/; max-age=0";
     dispatch(logout() as any);
     router.push("/login");
   };
 
   const isActive = (href: string, exact?: boolean) =>
     exact ? pathname === href : pathname?.startsWith(href);
+
+  if (authStatus === "checking") {
+    return null;
+  }
+
+  if (authStatus === "unauthorized") {
+    notFound();
+  }
 
   return (
     <div className="flex min-h-screen bg-[#0B0E11] font-[Inter,sans-serif] pt-[76px]">

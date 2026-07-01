@@ -7,19 +7,12 @@ const api = axios.create({
 const getStoredToken = (): string | null => {
   if (typeof window === "undefined") return null;
 
-  const directToken = localStorage.getItem("token");
-  if (directToken) return directToken;
+  const match = document.cookie.match(/(?:^|;\s*)token=([^;]+)/);
+  return match ? decodeURIComponent(match[1]) : null;
+};
 
-  const storedAuth = localStorage.getItem("auth");
-  if (storedAuth) {
-    try {
-      return JSON.parse(storedAuth)?.token || null;
-    } catch {
-      return null;
-    }
-  }
-
-  return null;
+const clearStoredToken = () => {
+  document.cookie = "token=; path=/; max-age=0";
 };
 
 api.interceptors.request.use(
@@ -46,8 +39,7 @@ api.interceptors.response.use(
       console.log("Unauthorized - logging out");
 
       if (typeof window !== "undefined") {
-        localStorage.removeItem("token");
-        localStorage.removeItem("auth");
+        clearStoredToken();
 
         if (window.location.pathname !== "/login") {
           window.location.href = "/login";
