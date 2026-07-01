@@ -13,7 +13,7 @@ export default function Register() {
   const dispatch = useDispatch();
   const router = useRouter();
 
-  const { user, loading, error, success, message } = useSelector((state: any) => state.auth);
+  const { loading, error, success, message } = useSelector((state: any) => state.auth);
 
   const [passwordError, setPasswordError] = useState("");
 
@@ -64,8 +64,6 @@ export default function Register() {
       toast.success(message, {
         toastId: "register-success",
       });
-
-      dispatch(clearMessage());
     }
 
     if (error) {
@@ -77,16 +75,20 @@ export default function Register() {
     }
   }, [success, message, error, dispatch]);
 
-  // Redirect after successful registration
+  // Redirect to login after successful registration.
+  // Registration does not log the user in automatically, so we watch
+  // `success` (not `user`, which registerUser never sets) and send them
+  // to /login rather than the homepage.
   useEffect(() => {
-    if (user) {
+    if (success) {
       const timer = setTimeout(() => {
-        router.push("/");
+        dispatch(clearMessage());
+        router.push("/login");
       }, 1500);
 
       return () => clearTimeout(timer);
     }
-  }, [user, router]);
+  }, [success, router, dispatch]);
 
   return (
     <div
