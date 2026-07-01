@@ -21,7 +21,6 @@ export const loginUser = createAsyncThunk(
     try {
       const response = await api.post("/auth/login", userData);
       
-      // Set token as cookie so middleware can read it
       if (response.data?.token) {
         document.cookie = `token=${response.data.token}; path=/; max-age=${7 * 24 * 60 * 60}; SameSite=Lax`;
       }
