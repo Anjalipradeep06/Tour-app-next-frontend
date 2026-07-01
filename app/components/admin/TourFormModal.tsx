@@ -23,6 +23,23 @@ const emptyTour = {
   isFeatured: false,
 };
 
+// Formats a Date into "YYYY-MM-DDTHH:MM" using LOCAL time (not UTC), so it
+// round-trips correctly with <input type="date"> + <input type="time">
+// in StartDatesEditor. Using toISOString() here would shift the time by
+// the browser's UTC offset and silently corrupt the departure time.
+const toLocalDateTimeValue = (d: any) => {
+  const date = d instanceof Date ? d : new Date(d);
+  if (isNaN(date.getTime())) return "";
+
+  const year = date.getFullYear();
+  const month = String(date.getMonth() + 1).padStart(2, "0");
+  const day = String(date.getDate()).padStart(2, "0");
+  const hours = String(date.getHours()).padStart(2, "0");
+  const minutes = String(date.getMinutes()).padStart(2, "0");
+
+  return `${year}-${month}-${day}T${hours}:${minutes}`;
+};
+
 const toFormState = (tour: any) => {
   if (!tour) return emptyTour;
   return {
@@ -37,7 +54,7 @@ const toFormState = (tour: any) => {
     inclusions: tour.inclusions || [],
     exclusions: tour.exclusions || [],
     itinerary: tour.itinerary || [],
-    startDates: (tour.startDates || []).map((d: any) => new Date(d).toISOString().slice(0, 10)),
+    startDates: (tour.startDates || []).map(toLocalDateTimeValue),
     meetingPoint: {
       address: tour.meetingPoint?.address || "",
       latitude: tour.meetingPoint?.latitude ?? "",
@@ -63,6 +80,10 @@ const toPayload = (form: any) => ({
     title: d.title.trim(),
     description: d.description.trim(),
   })),
+  // Values here are "YYYY-MM-DD" or "YYYY-MM-DDTHH:MM" strings from
+  // StartDatesEditor. JS Date parses either form as LOCAL time when there's
+  // no explicit timezone suffix, so `new Date(...)` on the backend/Mongoose
+  // side will correctly reconstruct the admin's intended local date+time.
   startDates: form.startDates.filter(Boolean),
   meetingPoint: {
     address: form.meetingPoint.address.trim(),
