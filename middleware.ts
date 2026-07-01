@@ -13,9 +13,10 @@ export function middleware(request: NextRequest) {
     }
 
     try {
-      // decode JWT payload (no verification here, just role check)
+      const base64Payload = token.split(".")[1];
+      const padded = base64Payload + "=".repeat((4 - base64Payload.length % 4) % 4);
       const payload = JSON.parse(
-        Buffer.from(token.split(".")[1], "base64").toString()
+        Buffer.from(padded, "base64").toString("utf-8")
       );
 
       if (payload.role !== "admin") {
@@ -30,5 +31,5 @@ export function middleware(request: NextRequest) {
 }
 
 export const config = {
-  matcher: ["/admin/:path*"],
+  matcher: ["/admin", "/admin/:path*"],
 };
