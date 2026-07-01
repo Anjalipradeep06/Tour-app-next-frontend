@@ -26,14 +26,15 @@ const authSlice = createSlice({
   initialState,
   reducers: {
     logout: (state) => {
-      state.user = null;
-      state.token = null;
-      state.success = false;
-      if (typeof window !== "undefined") {
-        localStorage.removeItem("user");
-        localStorage.removeItem("token");
-      }
-    },
+  state.user = null;
+  state.token = null;
+  state.success = false;
+  if (typeof window !== "undefined") {
+    localStorage.removeItem("user");
+    localStorage.removeItem("token");
+    document.cookie = "token=; path=/; max-age=0"; // ← add this
+  }
+},
     clearError: (state) => {
       state.error = null;
     },
@@ -50,16 +51,17 @@ const authSlice = createSlice({
         state.error = null;
       })
       .addCase(loginUser.fulfilled, (state, action: PayloadAction<any>) => {
-        state.loading = false;
-        state.success = true;
-        state.user = action.payload.user;
-        state.token = action.payload.token;
-        state.message = action.payload.message;
-        if (typeof window !== "undefined") {
-          localStorage.setItem("user", JSON.stringify(action.payload.user));
-          localStorage.setItem("token", action.payload.token);
-        }
-      })
+  state.loading = false;
+  state.success = true;
+  state.user = action.payload.user;
+  state.token = action.payload.token;
+  state.message = action.payload.message;
+  if (typeof window !== "undefined") {
+    localStorage.setItem("user", JSON.stringify(action.payload.user));
+    localStorage.setItem("token", action.payload.token);
+    document.cookie = `token=${action.payload.token}; path=/; max-age=${7 * 24 * 60 * 60}; SameSite=Lax`; // ← add this
+  }
+})
       .addCase(loginUser.rejected, (state, action: PayloadAction<any>) => {
         state.loading = false;
         state.error = action.payload;
