@@ -19,7 +19,7 @@ export function middleware(request: NextRequest) {
         Buffer.from(padded, "base64").toString("utf-8")
       );
 
-      if (payload.role !== "admin") {
+      if (!payload.isAdmin) {
         return NextResponse.rewrite(new URL("/not-found", request.url));
       }
     } catch {
