@@ -14,6 +14,7 @@ import {
     FaCheckCircle,
     FaChevronLeft,
     FaChevronRight,
+    FaClock,
 } from "react-icons/fa";
 
 import { toast } from "react-toastify";
@@ -56,6 +57,9 @@ export default function BookingRequest() {
         specialRequirements: "",
         paymentMethod: "stripe",
     });
+
+    // Holds the full matched Date (with time) for the selected departure
+    const [selectedStartDateTime, setSelectedStartDateTime] = useState<Date | null>(null);
 
     const [formError, setFormError] = useState("");
     const [dateNotAvailable, setDateNotAvailable] = useState(false);
@@ -167,15 +171,33 @@ export default function BookingRequest() {
             })
             : null;
 
+    const formatDisplayTime = (date: Date | null) =>
+        date
+            ? date.toLocaleTimeString("en-IN", {
+                hour: "2-digit",
+                minute: "2-digit",
+            })
+            : null;
+
     const selectedEndDate = getEndDate(formData.bookingDate, tour?.duration);
 
     const availableStartDates = useMemo(() => tour?.startDates || [], [tour?.startDates]);
 
-    const validStartDateKeys = useMemo(() => {
-        const set = new Set<string>();
-        availableStartDates.forEach((d: any) => set.add(toDateKey(d)));
-        return set;
+    // Map dayKey -> full Date object (preserves time), used for both
+    // marking valid calendar days and recovering the departure time on click.
+    const validStartDatesMap = useMemo(() => {
+        const map = new Map<string, Date>();
+        availableStartDates.forEach((d: any) => {
+            const date = d instanceof Date ? d : new Date(d);
+            map.set(toDateKey(date), date);
+        });
+        return map;
     }, [availableStartDates]);
+
+    const validStartDateKeys = useMemo(
+        () => new Set(validStartDatesMap.keys()),
+        [validStartDatesMap]
+    );
 
     const totalAmount = (tour?.price || 0) * formData.participants;
 
@@ -241,14 +263,20 @@ export default function BookingRequest() {
 
         if (formError) setFormError("");
 
-        if (!validStartDateKeys.has(dayKey)) {
+        const matchedDate = validStartDatesMap.get(dayKey);
+
+        if (!matchedDate) {
             setDateNotAvailable(true);
             setFormData((prev) => ({ ...prev, bookingDate: "" }));
+            setSelectedStartDateTime(null);
             return;
         }
 
         setDateNotAvailable(false);
-        setFormData((prev) => ({ ...prev, bookingDate: dayKey }));
+        setSelectedStartDateTime(matchedDate);
+        // Store the full ISO datetime (date + time) so the departure
+        // time set by the admin is preserved all the way to the backend.
+        setFormData((prev) => ({ ...prev, bookingDate: matchedDate.toISOString() }));
     };
 
     const isViewingCurrentMonth = viewYear === today.getFullYear() && viewMonth === today.getMonth();
@@ -411,6 +439,13 @@ export default function BookingRequest() {
                                         {formatDisplayDate(selectedEndDate)}
                                     </p>
                                 )}
+
+                                {selectedStartDateTime && !dateNotAvailable && (
+                                    <p className="mt-1 flex items-center gap-1.5 text-[0.85rem] text-[#C9A669] font-semibold">
+                                        <FaClock className="text-[0.8em]" />
+                                        Departs at {formatDisplayTime(selectedStartDateTime)}
+                                    </p>
+                                )}
                             </div>
 
                             <div className="mb-6">
@@ -537,6 +572,13 @@ export default function BookingRequest() {
                                             <strong>
                                                 {formatDisplayDate(new Date(formData.bookingDate))} – {formatDisplayDate(selectedEndDate)}
                                             </strong>
+                                        </div>
+                                    )}
+
+                                    {selectedStartDateTime && !dateNotAvailable && (
+                                        <div className="flex justify-between mb-4 text-gray-600">
+                                            <span>Departure time</span>
+                                            <strong>{formatDisplayTime(selectedStartDateTime)}</strong>
                                         </div>
                                     )}
 
